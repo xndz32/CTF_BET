@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TOKENBET // CTF</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="scan"></div>
+
+<header>
+  <div class="logo">TOKEN<span>BET</span>_CTF</div>
+  <div id="headerBalance" class="balance-pill hidden">🪙 <b id="balanceValue">0</b></div>
+</header>
+
+<main>
+
+  <!-- AUTH SCREEN -->
+  <div id="authScreen">
+    <div class="card">
+      <div class="title-eyebrow">acesso</div>
+      <h1>Entrar</h1>
+      <input id="loginEmail" placeholder="email" autocomplete="off">
+      <input id="loginPass" type="password" placeholder="senha" autocomplete="off">
+      <button class="btn-primary" onclick="doLogin()">Entrar</button>
+      <p class="small" style="margin-top:10px;">Não tem conta? <span class="link" onclick="showRegister()">Criar conta</span></p>
+    </div>
+
+    <div id="registerCard" class="card hidden">
+      <div class="title-eyebrow">novo jogador</div>
+      <h2>Criar conta</h2>
+      <input id="regEmail" placeholder="email" autocomplete="off">
+      <input id="regPass" type="password" placeholder="senha" autocomplete="off">
+      <button class="btn-primary" onclick="doRegister()">Criar conta</button>
+      <p class="small" style="margin-top:10px;">Já tem conta? <span class="link" onclick="showLogin()">Entrar</span></p>
+    </div>
+
+    <div class="card">
+      <div class="warn">
+        ⚠ Este é um ambiente de treino CTF (Capture The Flag). O site contém vulnerabilidades
+        propositais para fins educacionais de segurança ofensiva. Não use dados reais.
+        Existem <b>5 flags</b> escondidas no formato <code>FLAG{...}</code>.
+      </div>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div id="appScreen" class="hidden">
+
+    <div class="tabs">
+      <div class="tab active" data-tab="mines" onclick="switchTab('mines')">💣 Mines</div>
+      <div class="tab" data-tab="dice" onclick="switchTab('dice')">🎲 Dice</div>
+      <div class="tab" data-tab="coin" onclick="switchTab('coin')">🪙 Coinflip</div>
+      <div class="tab" data-tab="crash" onclick="switchTab('crash')">📈 Crash</div>
+      <div class="tab" id="adminTab" data-tab="admin" onclick="switchTab('admin')">🛡 Admin</div>
+    </div>
+
+    <!-- MINES -->
+    <div id="panel-mines" class="card">
+      <div class="title-eyebrow">jogo</div>
+      <h2>Mines</h2>
+      <div class="row">
+        <input id="minesBet" type="number" placeholder="aposta" value="10">
+        <input id="minesCount" type="number" placeholder="minas (1-24)" value="3">
+      </div>
+      <button class="btn-primary" onclick="startMines()">Iniciar rodada</button>
+      <div class="mines-grid" id="minesGrid"></div>
+      <div class="row">
+        <button class="btn-ghost" id="cashoutBtn" onclick="cashoutMines()" disabled>Retirar (x<span id="minesMulti">1.00</span>)</button>
+      </div>
+      <p class="small" style="margin-top:8px;">Dica de auditoria: abra o console do navegador antes de clicar nos quadrados.</p>
+    </div>
+
+    <!-- DICE -->
+    <div id="panel-dice" class="card hidden">
+      <div class="title-eyebrow">jogo</div>
+      <h2>Dice</h2>
+      <p class="small">Acerte um número acima do alvo para ganhar.</p>
+      <div class="row">
+        <input id="diceBet" type="number" placeholder="aposta" value="10">
+        <input id="diceTarget" type="number" placeholder="alvo (2-98)" value="50">
+      </div>
+      <button class="btn-primary" onclick="playDice()">Rolar dado</button>
+      <div class="dice-result" id="diceResult">--</div>
+      <div class="history" id="diceHistory"></div>
+    </div>
+
+    <!-- COINFLIP -->
+    <div id="panel-coin" class="card hidden">
+      <div class="title-eyebrow">jogo</div>
+      <h2>Cara ou Coroa</h2>
+      <input id="coinBet" type="number" placeholder="aposta" value="10">
+      <div class="row">
+        <button class="btn-ghost" onclick="playCoin('cara')">Cara</button>
+        <button class="btn-ghost" onclick="playCoin('coroa')">Coroa</button>
+      </div>
+      <div class="dice-result" id="coinResult">--</div>
+      <div class="history" id="coinHistory"></div>
+    </div>
+
+    <!-- CRASH -->
+    <div id="panel-crash" class="card hidden">
+      <div class="title-eyebrow">jogo</div>
+      <h2>Crash</h2>
+      <p class="small">Retire antes do gráfico explodir.</p>
+      <input id="crashBet" type="number" placeholder="aposta" value="10">
+      <button class="btn-primary" id="crashStartBtn" onclick="startCrash()">Apostar</button>
+      <div class="dice-result" id="crashResult">1.00x</div>
+      <button class="btn-danger hidden" id="crashCashout" onclick="cashoutCrash()" style="width:100%;">Retirar agora</button>
+    </div>
+
+    <!-- ADMIN -->
+    <div id="panel-admin" class="card hidden">
+      <div class="title-eyebrow">restrito</div>
+      <h2>Painel Admin <span class="admin-badge">admin</span></h2>
+      <p class="small">Se você está vendo isto sem ser o admin real, encontrou uma falha de controle de acesso do lado do cliente.</p>
+      <div class="flag">FLAG{privilege_escalation_client_side_isAdmin}</div>
+      <h3 style="margin-top:16px;">Setar saldo de qualquer conta</h3>
+      <input id="adminTargetEmail" placeholder="email do usuário">
+      <input id="adminTargetBalance" type="number" placeholder="novo saldo">
+      <button class="btn-primary" onclick="adminSetBalance()">Aplicar</button>
+      <div class="flags-log" id="adminUsersLog"></div>
+    </div>
+
+    <div class="card">
+      <button class="btn-ghost" onclick="logout()">Sair</button>
+    </div>
+
+  </div>
+
+</main>
+
+<footer class="small">
+  TOKENBET_CTF · ambiente de treino · nenhum dinheiro real envolvido
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
